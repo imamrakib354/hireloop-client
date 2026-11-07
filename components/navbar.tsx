@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { HoverLift } from "@/components/hover-lift"
 
 // Navigation links matching the design
 const NAV_LINKS = [
@@ -24,7 +25,7 @@ export function Navbar() {
   const pathname = usePathname()
 
   return (
-    <header className="sticky top-3 z-50 w-full px-3 sm:top-5 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 w-full px-3 pt-3 sm:px-6 sm:pt-5 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <nav
           aria-label="Main Navigation"
@@ -35,12 +36,14 @@ export function Navbar() {
           {/* ============================================================ */}
           <div className="flex items-center lg:hidden">
             <DropdownMenu>
-              <DropdownMenuTrigger
-                className="inline-flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-300 transition-colors outline-none hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-[#635BFF] sm:size-10"
-                aria-label="Open menu"
-              >
-                <Menu className="size-5" />
-              </DropdownMenuTrigger>
+              <HoverLift>
+                <DropdownMenuTrigger
+                  className="inline-flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-300 transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#635bff]/20 group-hover/hover-lift:text-white focus-visible:ring-2 focus-visible:ring-[#635BFF] sm:size-10"
+                  aria-label="Open menu"
+                >
+                  <Menu className="size-5" />
+                </DropdownMenuTrigger>
+              </HoverLift>
 
               <DropdownMenuContent
                 align="start"
@@ -56,7 +59,7 @@ export function Navbar() {
                     <DropdownMenuItem
                       key={link.href}
                       className={cn(
-                        "cursor-pointer rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white",
+                        "cursor-pointer rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 hover:bg-[#635bff]/20 hover:text-[#ddd7ff] focus:bg-[#635bff]/20 focus:text-[#ddd7ff]",
                         active && "bg-white/10 font-semibold text-white"
                       )}
                     >
@@ -121,35 +124,43 @@ export function Navbar() {
             <div aria-hidden="true" className="h-5 w-px bg-white/20" />
 
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                className="text-sm font-medium text-[#8B80F9] transition-colors hover:text-[#A79DFF]"
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#5C53FE] to-[#7165FF] px-5 py-2.5 text-sm font-medium text-white shadow-[0_0_20px_rgba(92,83,254,0.4)] transition-all hover:brightness-110 active:scale-[0.98]"
-              >
-                Get Started
-              </button>
+              <HoverLift>
+                <Link
+                  href="/sign-in"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-[#8B80F9] transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#635bff]/15 group-hover/hover-lift:text-[#d5ceff] focus-visible:ring-2 focus-visible:ring-[#8b80f9]"
+                >
+                  Sign In
+                </Link>
+              </HoverLift>
+              <HoverLift>
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-xl bg-[#6757ff] px-5 py-2.5 text-sm font-medium text-white transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#5438d6] focus-visible:ring-2 focus-visible:ring-[#c4b5fd]"
+                >
+                  Get Started
+                </button>
+              </HoverLift>
             </div>
           </div>
 
-          {/* MOBILE & TABLET: Visual auth buttons only */}
+          {/* MOBILE & TABLET: Sign in and separate Get Started button */}
           <div className="flex items-center gap-1.5 sm:gap-3 lg:hidden">
-            <button
-              type="button"
-              className="px-2 py-1.5 text-xs font-medium text-[#8B80F9] transition-colors hover:text-[#A79DFF] sm:px-3 sm:text-sm"
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-[#5C53FE] to-[#7165FF] px-2.5 py-1.5 text-xs font-medium text-white shadow-[0_0_16px_rgba(92,83,254,0.35)] transition-all hover:brightness-110 active:scale-[0.98] sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm"
-            >
-              Get Started
-            </button>
+            <HoverLift>
+              <Link
+                href="/sign-in"
+                className="rounded-lg px-2 py-1.5 text-xs font-medium text-[#8B80F9] transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#635bff]/15 group-hover/hover-lift:text-[#d5ceff] focus-visible:ring-2 focus-visible:ring-[#8b80f9] sm:px-3 sm:text-sm"
+              >
+                Sign In
+              </Link>
+            </HoverLift>
+            <HoverLift>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-lg bg-[#6757ff] px-2.5 py-1.5 text-xs font-medium text-white transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#5438d6] focus-visible:ring-2 focus-visible:ring-[#c4b5fd] sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm"
+              >
+                Get Started
+              </button>
+            </HoverLift>
           </div>
         </nav>
       </div>

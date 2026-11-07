@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
+import { HoverLift } from "@/components/hover-lift"
 
 // Replace these platform URLs with HireLoop's profiles when available.
 const socialLinks = [
@@ -27,28 +28,31 @@ const Footer = () => {
       <div className="mx-auto flex min-h-[70px] max-w-7xl flex-col items-center justify-between gap-5 px-6 py-5 sm:flex-row sm:gap-6 lg:px-8">
         <nav aria-label="Social media" className="flex items-center gap-2">
           {socialLinks.map(({ label, href, path }) => (
-            <Button
-              key={label}
-              variant="ghost"
-              size="icon"
-              nativeButton={false}
-              render={
-                <a href={href} target="_blank" rel="noopener noreferrer" />
-              }
-              aria-label={`${label} (opens in a new tab)`}
-              className={`rounded-lg text-zinc-400 transition-colors hover:bg-[#635bff] hover:text-white focus-visible:ring-[#8b80f9] ${
-                label === "Pinterest" ? "bg-[#635bff] text-white" : "bg-white/5"
-              }`}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-                className="size-4"
+            <HoverLift key={label}>
+              <Button
+                variant="outline"
+                size="icon"
+                nativeButton={false}
+                render={
+                  <a href={href} target="_blank" rel="noopener noreferrer" />
+                }
+                aria-label={`${label} (opens in a new tab)`}
+                className={`rounded-lg border-white/10 text-zinc-400 transition-colors duration-300 hover:bg-[#5438d6] hover:text-white group-hover/hover-lift:bg-[#5438d6] group-hover/hover-lift:text-white focus-visible:ring-[#8b80f9] active:translate-y-0 dark:hover:bg-[#5438d6] dark:group-hover/hover-lift:bg-[#5438d6] ${
+                  label === "Pinterest"
+                    ? "bg-[#635bff] text-white"
+                    : "bg-white/5"
+                }`}
               >
-                <path d={path} />
-              </svg>
-            </Button>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                  className="size-4"
+                >
+                  <path d={path} />
+                </svg>
+              </Button>
+            </HoverLift>
           ))}
         </nav>
 
