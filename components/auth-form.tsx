@@ -7,10 +7,13 @@ import {
   ArrowRight,
   BriefcaseBusiness,
   Check,
+  Eye,
+  EyeOff,
   LockKeyhole,
   Loader2,
   Mail,
   Sparkles,
+  ShieldCheck,
   UserRound,
 } from "lucide-react"
 
@@ -26,9 +29,17 @@ type AuthFormProps = {
   onSubmit: (data: AuthFormData) => Promise<void>
 }
 
+const roleOptions = [
+  { value: "seeker", label: "Job Seeker", icon: UserRound },
+  { value: "recruiter", label: "Recruiter", icon: BriefcaseBusiness },
+  { value: "admin", label: "Admin", icon: ShieldCheck },
+] as const
+
 export function AuthForm({ mode, onSubmit }: AuthFormProps) {
   const isSignUp = mode === "sign-up"
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const submittingRef = useRef(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -39,6 +50,17 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
     const email = String(formData.get("email") ?? "").trim()
     const password = String(formData.get("password") ?? "")
     const name = String(formData.get("name") ?? "").trim()
+    const role = String(formData.get("role") ?? "seeker")
+
+    if (
+      isSignUp &&
+      role !== "seeker" &&
+      role !== "recruiter" &&
+      role !== "admin"
+    ) {
+      toast.add({ title: "Please select a valid role.", type: "error" })
+      return
+    }
 
     if (!email || !password || (isSignUp && !name)) {
       toast.add({
@@ -65,7 +87,14 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
     submittingRef.current = true
     setIsSubmitting(true)
     try {
-      await onSubmit({ email, password, ...(isSignUp ? { name } : {}) })
+      await onSubmit({
+        email,
+        password,
+        ...(isSignUp &&
+        (role === "seeker" || role === "recruiter" || role === "admin")
+          ? { name, role }
+          : {}),
+      })
     } catch (error) {
       toast.add({
         title: isSignUp ? "Could not create your account" : "Could not sign in",
@@ -168,6 +197,42 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
             aria-label={isSignUp ? "Create an account" : "Sign in"}
           >
             {isSignUp && (
+              <fieldset disabled={isSubmitting} className="space-y-4">
+                <legend className="text-sm font-medium text-[#e0d7e7]">
+                  I am joining as
+                </legend>
+                <div className="grid grid-cols-3 gap-3">
+                  {roleOptions.map(({ value, label, icon: Icon }) => (
+                    <label
+                      key={value}
+                      className="relative cursor-pointer text-center"
+                    >
+                      <input
+                        type="radio"
+                        name="role"
+                        value={value}
+                        defaultChecked={value === "seeker"}
+                        required
+                        className="peer sr-only"
+                      />
+                      <span className="flex flex-col items-center gap-3 rounded-xl border border-transparent px-2 py-4 text-[#a89db3] transition-colors duration-200 peer-checked:border-[#8b80f9]/40 peer-checked:bg-[#635bff]/10 peer-checked:text-[#c4b5fd] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-[#8b80f9] peer-disabled:pointer-events-none peer-disabled:opacity-50 hover:bg-white/[0.03]">
+                        <span className="flex size-14 items-center justify-center rounded-2xl border border-[#8b80f9]/20 bg-[#635bff]/10 text-[#b6a8ff]">
+                          <Icon
+                            aria-hidden="true"
+                            className="size-6"
+                            strokeWidth={1.5}
+                          />
+                        </span>
+                        <span className="text-xs font-medium sm:text-sm">
+                          {label}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+            {isSignUp && (
               <div className="space-y-2.5">
                 <Label htmlFor="full-name" className="text-[#e0d7e7]">
                   Full name
@@ -222,7 +287,7 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
                 <Input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   minLength={isSignUp ? 8 : undefined}
                   disabled={isSubmitting}
@@ -232,8 +297,23 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
                       ? "Create a strong password"
                       : "Enter your password"
                   }
-                  className={inputClassName}
+                  className={`${inputClassName} pr-12`}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  disabled={isSubmitting}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                  aria-controls="password"
+                  className="absolute top-1 right-1 flex size-10 items-center justify-center rounded-lg text-[#a89db3] transition-colors hover:bg-[#635bff]/10 hover:text-[#c4b5fd] focus-visible:outline-2 focus-visible:outline-[#8b80f9] disabled:opacity-50"
+                >
+                  {showPassword ? (
+                    <EyeOff className="size-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="size-4" aria-hidden="true" />
+                  )}
+                </button>
               </div>
               {isSignUp && (
                 <p className="text-xs text-[#91849f]">
@@ -256,11 +336,32 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
                     name="confirmPassword"
                     required
                     disabled={isSubmitting}
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     autoComplete="new-password"
                     placeholder="Enter your password again"
-                    className={inputClassName}
+                    className={`${inputClassName} pr-12`}
                   />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowConfirmPassword((visible) => !visible)
+                    }
+                    disabled={isSubmitting}
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
+                    aria-pressed={showConfirmPassword}
+                    aria-controls="confirm-password"
+                    className="absolute top-1 right-1 flex size-10 items-center justify-center rounded-lg text-[#a89db3] transition-colors hover:bg-[#635bff]/10 hover:text-[#c4b5fd] focus-visible:outline-2 focus-visible:outline-[#8b80f9] disabled:opacity-50"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="size-4" aria-hidden="true" />
+                    ) : (
+                      <Eye className="size-4" aria-hidden="true" />
+                    )}
+                  </button>
                 </div>
               </div>
             )}

@@ -9,13 +9,19 @@ import type { AuthFormData } from "@/lib/types/authformdata"
 export default function SignUpPage() {
   const router = useRouter()
 
-  async function handleSignUp({ email, password, name }: AuthFormData) {
+  async function handleSignUp({
+    email,
+    password,
+    name,
+    role = "seeker",
+  }: AuthFormData) {
     if (!name?.trim()) throw new Error("Please enter your full name.")
 
     const { data, error } = await authClient.signUp.email({
       email,
       password,
       name: name.trim(),
+      role,
       callbackURL: "/",
     })
 

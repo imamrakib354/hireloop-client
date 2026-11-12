@@ -17,7 +17,9 @@ export const auth = betterAuth({
     additionalFields: {
       role: {
         type: ["admin", "seeker", "recruiter"],
-        input: false,
+        // Development only: restrict privileged role assignment before deployment.
+        input: true,
+        defaultValue: "seeker",
       },
     },
   },
