@@ -119,3 +119,49 @@ test("getJobs handles an empty list and rejects failed or invalid responses", as
   )
   await assert.rejects(invalid.getJobs(), /response is invalid/)
 })
+
+test("getJob fetches one fresh record and normalizes legacy compensation", async () => {
+  const api = setup(
+    async (url, options) => {
+      assert.equal(url, "https://api.example.com/jobs/job-123")
+      assert.equal(options.cache, "no-store")
+      return {
+        ok: true,
+        json: async () => ({
+          _id: "job-123",
+          minSalary: 25,
+          maxSalary: 40,
+          frequency: "hourly",
+        }),
+      }
+    },
+    "https://api.example.com",
+    "lib/api/jobs.ts"
+  )
+  const job = await api.getJob("job-123")
+  assert.equal(job.minSalary, "25")
+  assert.equal(job.maxSalary, "40")
+  assert.equal(job.salaryFrequency, "hourly")
+})
+
+test("getJob distinguishes missing records from failed and malformed responses", async () => {
+  for (const response of [
+    { status: 404, ok: false },
+    { ok: true, json: async () => null },
+  ]) {
+    const api = setup(async () => response, undefined, "lib/api/jobs.ts")
+    assert.equal(await api.getJob("missing"), null)
+  }
+  const failed = setup(
+    async () => ({ ok: false, status: 500 }),
+    undefined,
+    "lib/api/jobs.ts"
+  )
+  await assert.rejects(failed.getJob("job-123"), /Could not load this job/)
+  const invalid = setup(
+    async () => ({ ok: true, json: async () => ({ error: "Invalid" }) }),
+    undefined,
+    "lib/api/jobs.ts"
+  )
+  await assert.rejects(invalid.getJob("job-123"), /response is invalid/)
+})

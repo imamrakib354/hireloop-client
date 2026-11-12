@@ -48,7 +48,7 @@ export function BrowseCard({ job }: { job: Job }) {
         <div className="min-w-0 flex-1">
           <h2 className="text-base font-semibold break-words sm:text-lg">
             <Link
-              href={`/jobs/${job._id}`}
+              href={`/Browse-jobs/${job._id}`}
               className="rounded-sm transition-colors outline-none hover:text-violet-300 focus-visible:ring-2 focus-visible:ring-violet-400"
             >
               {job.title || "Untitled job"}
@@ -99,7 +99,7 @@ export function BrowseCard({ job }: { job: Job }) {
           </div>
         </div>
         <Link
-          href={`/jobs/${job._id}`}
+          href={`/Browse-jobs/${job._id}`}
           aria-label={`View details for ${job.title}`}
           className="hidden size-8 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition-colors outline-none hover:bg-violet-400/10 hover:text-violet-300 focus-visible:ring-2 focus-visible:ring-violet-400 sm:flex"
         >

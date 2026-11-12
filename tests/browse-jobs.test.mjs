@@ -258,7 +258,7 @@ test("reusable browse card links to details and displays dollar compensation", (
   })
   const items = nodes(card.BrowseCard({ job: jobs[0] }))
   assert.ok(items.includes("$25 – $40 / hr"))
-  assert.ok(items.some((item) => item?.props?.href === "/jobs/job-1"))
+  assert.ok(items.some((item) => item?.props?.href === "/Browse-jobs/job-1"))
 })
 
 test("browse page fetches from the existing jobs API and handles failures", async () => {

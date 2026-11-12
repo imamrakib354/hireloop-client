@@ -203,7 +203,9 @@ test("each job has icon-only update, delete dialog and view details actions", ()
   assert.equal(buttons.length, 1)
   assert.equal(buttons[0].props.size, "icon-sm")
   assert.ok(!items.includes("Update"))
-  const details = items.find((item) => item?.props?.href === "/jobs/job-123")
+  const details = items.find(
+    (item) => item?.props?.href === "/Browse-jobs/job-123"
+  )
   assert.ok(details.props["aria-label"].includes("Frontend Developer"))
   for (const button of buttons) {
     assert.ok(button.props["aria-label"].includes("Frontend Developer"))

@@ -29,7 +29,7 @@ export function JobActions({ jobId, title }: { jobId: string; title: string }) {
       </Button>
       <DeleteJobDialog job={{ _id: jobId, title }} />
       <Link
-        href={`/jobs/${jobId}`}
+        href={`/Browse-jobs/${jobId}`}
         aria-label={`View details for ${title}`}
         title="View job details"
         className="inline-flex size-8 items-center justify-center rounded-md bg-[#202023] text-sky-400 transition-colors outline-none hover:bg-sky-400/10 hover:text-sky-300 focus-visible:ring-2 focus-visible:ring-sky-400"
