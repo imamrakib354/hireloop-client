@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRef, useState, type FormEvent } from "react"
 import { createJob } from "@/lib/actions/jobs"
+import { useSession } from "@/lib/auth-client"
 import type { JobFormData, JobType } from "@/lib/types/jobformdata"
 import { salaryUnit } from "@/lib/job-display"
 import {
@@ -45,9 +46,16 @@ const categories = [
   "Other",
 ]
 
-const jobTypes: JobType[] = ["Full-time", "Part-time", "Contract", "Internship"]
+const jobTypes: JobType[] = [
+  "Full-time",
+  "Part-time",
+  "Contract",
+  "Internship",
+  "Freelance",
+]
 
 export default function AddJobPage() {
+  const { data: session, isPending } = useSession()
   const [isRemote, setIsRemote] = useState(false)
   const [message, setMessage] = useState("")
   const [hasError, setHasError] = useState(false)
@@ -59,9 +67,16 @@ export default function AddJobPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (submittingRef.current) return
+    if (!session?.user.id) {
+      setHasError(true)
+      setMessage("Please sign in before publishing a job.")
+      return
+    }
     const formData = new FormData(event.currentTarget)
     const jobType = formData.get("jobType") as JobType
     const jobData: JobFormData = {
+      recruiterId: session.user.id,
+      createdAt: new Date().toISOString(),
       title: String(formData.get("title") || "").trim(),
       companyName: String(formData.get("companyName") || "").trim(),
       category: String(formData.get("category") || ""),
@@ -172,7 +187,7 @@ export default function AddJobPage() {
           </div>
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isPending || !session?.user.id}
             aria-busy={isSubmitting}
             className="h-10 w-fit gap-2 bg-[#6757ff] px-5 text-xs text-white shadow-lg shadow-[#6757ff]/15 hover:bg-[#796aff] focus-visible:ring-violet-400"
           >
@@ -376,7 +391,7 @@ export default function AddJobPage() {
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <Label htmlFor="minSalary" className={labelClass}>
-                Min / {salaryUnit(salaryFrequency)}{" "}
+                Min ($) / {salaryUnit(salaryFrequency)}{" "}
                 <span className="text-violet-400">*</span>
               </Label>
               <Input
@@ -392,7 +407,7 @@ export default function AddJobPage() {
             </div>
             <div>
               <Label htmlFor="maxSalary" className={labelClass}>
-                Max / {salaryUnit(salaryFrequency)}{" "}
+                Max ($) / {salaryUnit(salaryFrequency)}{" "}
                 <span className="text-violet-400">*</span>
               </Label>
               <Input

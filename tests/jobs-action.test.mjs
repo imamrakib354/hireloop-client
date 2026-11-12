@@ -53,6 +53,21 @@ test("createJob rejects HTTP errors", async () => {
   await assert.rejects(createJob({ title: "Test" }), /Could not publish/)
 })
 
+test("deleteJob sends DELETE and returns the backend result", async () => {
+  const result = { acknowledged: true, deletedCount: 1 }
+  const { deleteJob } = setup(async (url, options) => {
+    assert.equal(url, "https://api.example.com/jobs/job-123")
+    assert.equal(options.method, "DELETE")
+    return { ok: true, json: async () => result }
+  }, "https://api.example.com")
+  assert.equal(await deleteJob("job-123"), result)
+})
+
+test("deleteJob rejects HTTP errors", async () => {
+  const { deleteJob } = setup(async () => ({ ok: false }))
+  await assert.rejects(deleteJob("job-123"), /Could not delete/)
+})
+
 test("getJobs fetches fresh records and normalizes legacy salaries and frequency", async () => {
   const { getJobs } = setup(
     async (url, options) => {

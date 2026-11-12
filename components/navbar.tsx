@@ -19,7 +19,7 @@ import { toast } from "@/components/ui/toast"
 import { dashboardHref, isDashboardRole } from "@/lib/dashboard"
 
 const PUBLIC_NAV_LINKS = [
-  { label: "Browse Jobs", href: "/jobs" },
+  { label: "Browse Jobs", href: "/Browse-jobs" },
   { label: "Company", href: "/company" },
   { label: "Pricing", href: "/pricing" },
 ] as const
@@ -66,8 +66,25 @@ export function Navbar({ user }: NavbarProps) {
     }
   }
 
-  const accountControls = (compact = false) => (
+  const accountControls = () => (
     <>
+      {user && (
+        <>
+          <p className="hidden min-w-0 text-xs leading-snug text-zinc-400 sm:block xl:text-sm">
+            Welcome,
+            <span
+              className="block max-w-28 truncate font-medium text-white"
+              title={user.name}
+            >
+              {user.name}
+            </span>
+          </p>
+          <span
+            aria-hidden="true"
+            className="hidden h-6 w-px shrink-0 bg-white/15 sm:block"
+          />
+        </>
+      )}
       {user ? (
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <HoverLift>
@@ -76,12 +93,15 @@ export function Navbar({ user }: NavbarProps) {
               onClick={handleSignOut}
               disabled={isSigningOut}
               aria-busy={isSigningOut}
-              className="inline-flex items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium whitespace-nowrap text-[#8B80F9] transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#635bff]/15 group-hover/hover-lift:text-[#d5ceff] focus-visible:ring-2 focus-visible:ring-[#8b80f9] disabled:cursor-wait disabled:opacity-60 sm:px-3 sm:text-sm"
+              className="inline-flex items-center gap-1 rounded-lg px-1 py-2 text-[11px] font-medium whitespace-nowrap text-[#8B80F9] transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#635bff]/15 group-hover/hover-lift:text-[#d5ceff] focus-visible:ring-2 focus-visible:ring-[#8b80f9] disabled:cursor-wait disabled:opacity-60 sm:gap-2 sm:px-2 sm:text-sm"
             >
               {isSigningOut && (
                 <Loader2 aria-hidden="true" className="size-3 animate-spin" />
               )}
-              {isSigningOut ? "Signing out…" : "Sign Out"}
+              <span className="sm:hidden">Sign Out</span>
+              <span className="hidden sm:inline">
+                {isSigningOut ? "Signing out…" : "Sign Out"}
+              </span>
             </button>
           </HoverLift>
         </div>
@@ -89,12 +109,7 @@ export function Navbar({ user }: NavbarProps) {
         <HoverLift>
           <Link
             href="/sign-in"
-            className={cn(
-              "rounded-lg font-medium text-[#8B80F9] transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#635bff]/15 group-hover/hover-lift:text-[#d5ceff] focus-visible:ring-2 focus-visible:ring-[#8b80f9]",
-              compact
-                ? "px-2 py-1.5 text-xs sm:px-3 sm:text-sm"
-                : "px-3 py-2 text-sm"
-            )}
+            className="rounded-lg px-1 py-2 text-[11px] font-medium whitespace-nowrap text-[#8B80F9] transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#635bff]/15 group-hover/hover-lift:text-[#d5ceff] focus-visible:ring-2 focus-visible:ring-[#8b80f9] sm:px-2 sm:text-sm"
           >
             Sign In
           </Link>
@@ -103,12 +118,7 @@ export function Navbar({ user }: NavbarProps) {
       <HoverLift>
         <button
           type="button"
-          className={cn(
-            "inline-flex items-center justify-center bg-[#6757ff] font-medium whitespace-nowrap text-white transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#5438d6] focus-visible:ring-2 focus-visible:ring-[#c4b5fd]",
-            compact
-              ? "rounded-lg px-2.5 py-1.5 text-xs sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm"
-              : "rounded-xl px-5 py-2.5 text-sm"
-          )}
+          className="inline-flex items-center justify-center rounded-lg bg-[#6757ff] px-2.5 py-2 text-[11px] font-medium whitespace-nowrap text-white transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#5438d6] focus-visible:ring-2 focus-visible:ring-[#c4b5fd] sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
         >
           Get Started
         </button>
@@ -121,54 +131,65 @@ export function Navbar({ user }: NavbarProps) {
       <div className="mx-auto max-w-7xl">
         <nav
           aria-label="Main Navigation"
-          className="relative flex min-h-16 flex-wrap items-center rounded-2xl border border-white/10 bg-[#0e0d16]/85 px-4 py-3 shadow-2xl shadow-black/50 backdrop-blur-xl transition-all sm:px-6 xl:h-20 xl:flex-nowrap xl:gap-6 xl:py-0"
+          className="relative flex min-h-16 items-center justify-between gap-2 rounded-2xl border border-white/10 bg-[#0e0d16]/85 px-2.5 py-3 shadow-2xl shadow-black/50 backdrop-blur-xl sm:gap-4 sm:px-6 xl:grid xl:h-20 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:gap-5 xl:py-0"
         >
-          {/* ============================================================ */}
-          {/* MOBILE & TABLET: Left Burger Menu Dropdown                  */}
-          {/* ============================================================ */}
-          <div className="flex items-center xl:hidden">
-            <DropdownMenu>
-              <HoverLift>
-                <DropdownMenuTrigger
-                  className="inline-flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-300 transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#635bff]/20 group-hover/hover-lift:text-white focus-visible:ring-2 focus-visible:ring-[#635BFF] sm:size-10"
-                  aria-label="Open menu"
+          {/* Left: mobile menu and logo. */}
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
+            <div className="flex items-center xl:hidden">
+              <DropdownMenu>
+                <HoverLift>
+                  <DropdownMenuTrigger
+                    className="inline-flex size-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-zinc-300 transition-colors duration-300 outline-none group-hover/hover-lift:bg-[#635bff]/20 group-hover/hover-lift:text-white focus-visible:ring-2 focus-visible:ring-[#635BFF] sm:size-10 sm:rounded-xl"
+                    aria-label="Open menu"
+                  >
+                    <Menu className="size-5" />
+                  </DropdownMenuTrigger>
+                </HoverLift>
+
+                <DropdownMenuContent
+                  align="start"
+                  sideOffset={8}
+                  className="w-52 rounded-xl border border-white/10 bg-[#151421]/95 p-1.5 text-zinc-200 shadow-2xl backdrop-blur-xl"
                 >
-                  <Menu className="size-5" />
-                </DropdownMenuTrigger>
-              </HoverLift>
+                  {user && (
+                    <div className="mb-1 border-b border-white/10 px-3 py-2 text-xs text-zinc-400 sm:hidden">
+                      Welcome,
+                      <p
+                        className="mt-1 truncate font-medium text-white"
+                        title={user.name}
+                      >
+                        {user.name}
+                      </p>
+                    </div>
+                  )}
+                  {NAV_LINKS.map((link) => {
+                    const active =
+                      pathname === link.href ||
+                      pathname.startsWith(link.href + "/")
 
-              <DropdownMenuContent
-                align="start"
-                sideOffset={8}
-                className="w-52 rounded-xl border border-white/10 bg-[#151421]/95 p-1.5 text-zinc-200 shadow-2xl backdrop-blur-xl"
-              >
-                {NAV_LINKS.map((link) => {
-                  const active =
-                    pathname === link.href ||
-                    pathname.startsWith(link.href + "/")
+                    return (
+                      <DropdownMenuItem
+                        key={link.href}
+                        className={cn(
+                          "cursor-pointer rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 hover:bg-[#635bff]/20 hover:text-[#ddd7ff] focus:bg-[#635bff]/20 focus:text-[#ddd7ff]",
+                          active &&
+                            "bg-[#6757ff]/15 text-[#c4b5fd] ring-1 ring-[#8b80f9]/20 ring-inset"
+                        )}
+                      >
+                        <Link
+                          href={link.href}
+                          aria-current={active ? "page" : undefined}
+                          className="w-full"
+                        >
+                          {link.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    )
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
-                  return (
-                    <DropdownMenuItem
-                      key={link.href}
-                      className={cn(
-                        "cursor-pointer rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 hover:bg-[#635bff]/20 hover:text-[#ddd7ff] focus:bg-[#635bff]/20 focus:text-[#ddd7ff]",
-                        active && "bg-white/10 font-semibold text-white"
-                      )}
-                    >
-                      <Link href={link.href} className="w-full">
-                        {link.label}
-                      </Link>
-                    </DropdownMenuItem>
-                  )
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* ============================================================ */}
-          {/* Logo stays beside the menu on small screens. */}
-          {/* ============================================================ */}
-          <div className="mr-auto ml-3 shrink-0 xl:mx-0">
             <Link
               href="/"
               aria-label="HireLoop home"
@@ -180,83 +201,39 @@ export function Navbar({ user }: NavbarProps) {
                 width={140}
                 height={38}
                 priority
-                className="h-7 w-auto object-contain sm:h-8 xl:h-9"
+                className="h-auto w-[72px] object-contain min-[375px]:w-24 sm:w-32 xl:w-36"
               />
             </Link>
           </div>
 
-          {/* ============================================================ */}
-          {/* Desktop navigation has enough room before switching layouts. */}
-          {/* ============================================================ */}
-          <div className="hidden min-w-0 flex-1 items-center gap-4 xl:flex">
-            <div className="mr-auto flex min-w-0 items-center gap-4">
-              {/* Desktop Navigation Links */}
-              <ul className="flex shrink-0 items-center gap-4">
-                {NAV_LINKS.map((link) => {
-                  const active =
-                    pathname === link.href ||
-                    pathname.startsWith(link.href + "/")
+          {/* Center: desktop page links, independent of account width. */}
+          <ul className="hidden items-center justify-center gap-1 xl:flex">
+            {NAV_LINKS.map((link) => {
+              const active =
+                pathname === link.href || pathname.startsWith(link.href + "/")
 
-                  return (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className={cn(
-                          "text-sm font-normal tracking-tight whitespace-nowrap transition-colors duration-150",
-                          active
-                            ? "font-semibold text-white underline underline-offset-4"
-                            : "text-zinc-300 hover:text-white"
-                        )}
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  )
-                })}
-              </ul>
-
-              {user && (
-                <div
-                  aria-hidden="true"
-                  className="h-5 w-px shrink-0 bg-white/20"
-                />
-              )}
-
-              {user && (
-                <p className="max-w-40 min-w-0 text-sm text-zinc-300">
-                  Welcome,
-                  <br />
-                  <span
-                    className="block truncate font-medium text-white"
-                    title={user.name}
+              return (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "inline-flex items-center justify-center rounded-xl px-3 py-2.5 text-sm font-medium tracking-tight whitespace-nowrap transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[#8b80f9]",
+                      active
+                        ? "bg-[#6757ff]/15 text-[#c4b5fd] ring-1 ring-[#8b80f9]/20 ring-inset"
+                        : "text-zinc-300 hover:bg-white/5 hover:text-white"
+                    )}
                   >
-                    {user.name}
-                  </span>
-                </p>
-              )}
-            </div>
+                    {link.label}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
 
-            <div className="flex shrink-0 items-center gap-3">
-              {accountControls()}
-            </div>
-          </div>
-
-          {/* Keep account details and actions together on the left. */}
-          <div className="mt-3 flex w-full min-w-0 flex-col items-start gap-3 border-t border-white/10 pt-3 xl:hidden">
-            {user && (
-              <p className="w-full min-w-0 text-xs text-zinc-300 sm:text-sm">
-                Welcome,{" "}
-                <span
-                  className="block truncate font-medium text-white"
-                  title={user.name}
-                >
-                  {user.name}
-                </span>
-              </p>
-            )}
-            <div className="flex flex-wrap items-center justify-start gap-2 sm:gap-3">
-              {accountControls(true)}
-            </div>
+          {/* Right: one shared account group at every breakpoint. */}
+          <div className="ml-auto flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-3 xl:ml-0 xl:justify-self-end">
+            {accountControls()}
           </div>
         </nav>
       </div>

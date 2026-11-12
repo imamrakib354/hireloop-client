@@ -16,7 +16,7 @@ vm.runInNewContext(
 )
 
 // Exercise the actual navbar component and handler without a browser or database.
-function setup(signOut = async () => ({ error: null })) {
+function setup(signOut = async () => ({ error: null }), pathname = "/") {
   const calls = { toasts: [], routes: [], refreshes: 0, busy: [] }
   const exports = {}
   const mocks = {
@@ -26,7 +26,7 @@ function setup(signOut = async () => ({ error: null })) {
       useRef: (current) => ({ current }),
     },
     "next/navigation": {
-      usePathname: () => "/",
+      usePathname: () => pathname,
       useRouter: () => ({
         replace: (url) => calls.routes.push(url),
         refresh: () => calls.refreshes++,
@@ -80,14 +80,14 @@ function signOutButton(tree) {
   )
 }
 
-test("logged out: shows Sign In and Get Started on desktop and mobile", () => {
+test("logged out: shares Sign In and Get Started across desktop and mobile", () => {
   const { render } = setup()
   const items = nodes(render(null))
   assert.equal(
     items.filter((node) => node?.props?.href === "/sign-in").length,
-    2
+    1
   )
-  assert.equal(items.filter((node) => node === "Get Started").length, 2)
+  assert.equal(items.filter((node) => node === "Get Started").length, 1)
   assert.equal(signOutButton(render(null)), undefined)
   assert.equal(items.filter((node) => node === "Dashboard").length, 0)
 })
@@ -130,20 +130,69 @@ test("desktop and mobile use the same Company URL", () => {
   }
 })
 
-test("mobile account row wraps and keeps actions left-aligned", () => {
+test("desktop and mobile Browse Jobs links use the new route", () => {
+  const { render } = setup()
+  const items = nodes(render(null))
+  assert.equal(
+    items.filter((node) => node?.props?.href === "/Browse-jobs").length,
+    2
+  )
+  assert.equal(items.filter((node) => node?.props?.href === "/jobs").length, 0)
+})
+
+test("the current page uses a violet rounded highlight rather than an underline", () => {
+  const { render } = setup(undefined, "/Browse-jobs")
+  const items = nodes(render(null))
+  const links = items.filter(
+    (node) => node?.type === "a" && node.props.href === "/Browse-jobs"
+  )
+  assert.equal(links.length, 2)
+  for (const link of links) assert.equal(link.props["aria-current"], "page")
+  const desktop = links.find((link) =>
+    link.props.className.includes("rounded-xl")
+  )
+  assert.ok(desktop.props.className.includes("bg-[#6757ff]/15"))
+  assert.ok(!desktop.props.className.includes("underline"))
+})
+
+test("navbar uses centered desktop links and one inline account group", () => {
   const { render } = setup()
   const items = nodes(render({ name: "A long user name", role: "seeker" }))
-  const mobileRow = items.find(
-    (node) =>
-      node?.props?.className?.includes("border-t") &&
-      node?.props?.className?.includes("xl:hidden")
+  const nav = items.find((node) => node?.type === "nav")
+  assert.ok(
+    nav.props.className.includes(
+      "xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"
+    )
   )
-  assert.ok(mobileRow.props.className.includes("items-start"))
-  const actions = nodes(mobileRow).find((node) =>
-    node?.props?.className?.includes("justify-start")
+  assert.ok(!nav.props.className.includes("flex-wrap"))
+  const [left, center, right] = React.Children.toArray(nav.props.children)
+  assert.ok(
+    nodes(left).some((node) => node?.props?.["aria-label"] === "HireLoop home")
   )
-  assert.ok(actions.props.className.includes("flex-wrap"))
-  assert.ok(!mobileRow.props.className.includes("justify-between"))
+  assert.equal(center.type, "ul")
+  assert.ok(center.props.className.includes("justify-center"))
+  assert.ok(right.props.className.includes("xl:justify-self-end"))
+  assert.equal(nodes(right).filter((node) => node === "Get Started").length, 1)
+  assert.ok(!right.props.className.includes("flex-col"))
+})
+
+test("small screens move the welcome message into the left dropdown", () => {
+  const { render } = setup()
+  const items = nodes(render({ name: "A long user name", role: "seeker" }))
+  const dropdown = items.find((node) => node?.type === "DropdownMenuContent")
+  const welcome = nodes(dropdown).find((node) =>
+    node?.props?.className?.includes("sm:hidden")
+  )
+  assert.ok(nodes(welcome).includes("A long user name"))
+  const inlineWelcome = items.find(
+    (node) => node?.type === "p" && node.props.className?.includes("sm:block")
+  )
+  assert.ok(inlineWelcome.props.className.includes("hidden"))
+  assert.ok(
+    nodes(inlineWelcome).some((node) =>
+      node?.props?.className?.includes("truncate")
+    )
+  )
 })
 
 test("logged in: welcomes user, shows Sign Out, and retains Get Started", () => {
@@ -152,7 +201,7 @@ test("logged in: welcomes user, shows Sign Out, and retains Get Started", () => 
   const items = nodes(tree)
   assert.equal(items.filter((node) => node === "Test User").length, 2)
   assert.equal(items.filter((node) => node === "Sign Out").length, 2)
-  assert.equal(items.filter((node) => node === "Get Started").length, 2)
+  assert.equal(items.filter((node) => node === "Get Started").length, 1)
   assert.equal(
     items.filter((node) => node?.props?.href === "/sign-in").length,
     0

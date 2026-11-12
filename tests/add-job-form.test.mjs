@@ -18,7 +18,9 @@ vm.runInNewContext(
 function setup(
   isRemote = false,
   createJob = async () => ({ acknowledged: true, insertedId: "job-123" }),
-  salaryFrequency = "hourly"
+  salaryFrequency = "hourly",
+  session = { user: { id: "recruiter-123" } },
+  isPending = false
 ) {
   const exports = {}
   const messages = []
@@ -44,6 +46,7 @@ function setup(
       useRef: (current) => ({ current }),
     },
     "next/link": { default: "a" },
+    "@/lib/auth-client": { useSession: () => ({ data: session, isPending }) },
     "@/lib/job-display": jobDisplay,
     "@/lib/actions/jobs": {
       createJob: (data) => {
@@ -163,7 +166,7 @@ test("form includes all named fields and a real submit button", () => {
     items.some((node) => node.type === "Button" && node.props.type === "submit")
   )
   const radios = items.filter((node) => node.props?.type === "radio")
-  assert.equal(radios.length, 4)
+  assert.equal(radios.length, 5)
   assert.equal(radios.filter((node) => node.props.defaultChecked).length, 1)
 })
 
@@ -186,6 +189,8 @@ test("valid form sends typed job data and confirms the inserted job", async () =
   assert.match(form.messages.at(-1), /published successfully/)
   assert.equal(form.requests.length, 1)
   assert.equal(form.requests[0].title, "Frontend Developer")
+  assert.equal(form.requests[0].recruiterId, "recruiter-123")
+  assert.ok(Number.isFinite(Date.parse(form.requests[0].createdAt)))
   assert.equal(form.requests[0].minSalary, "25")
   assert.equal(form.requests[0].maxSalary, "40")
   assert.equal(form.requests[0].salaryFrequency, "hourly")
@@ -198,6 +203,29 @@ test("valid form sends typed job data and confirms the inserted job", async () =
   assert.deepEqual(form.busy, [true, false])
   assert.deepEqual(form.formResets, [1])
   assert.deepEqual(form.remoteChanges, [false])
+})
+
+test("publishing requires a current session and disables the button while it loads", async () => {
+  const form = setup(false, undefined, "hourly", null)
+  await form.submit()
+  assert.equal(form.requests.length, 0)
+  assert.match(form.messages.at(-1), /sign in/)
+  for (const tree of [
+    form.tree,
+    setup(false, undefined, "hourly", null, true).tree,
+  ]) {
+    const button = nodes(tree).find(
+      (node) => node.type === "Button" && node.props.type === "submit"
+    )
+    assert.equal(button.props.disabled, true)
+  }
+})
+
+test("Freelance is offered and can be published as a job type", async () => {
+  const form = setup()
+  assert.ok(nodes(form.tree).some((node) => node?.props?.value === "Freelance"))
+  await form.submit({ jobType: "Freelance" })
+  assert.equal(form.requests[0].jobType, "Freelance")
 })
 
 test("successful publishing resets remote work and restores form defaults", async () => {

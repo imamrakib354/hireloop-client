@@ -17,3 +17,16 @@ export const createJob = async (
   }
   return res.json()
 }
+
+export const deleteJob = async (
+  jobId: string
+): Promise<{ acknowledged: boolean; deletedCount: number }> => {
+  const res = await fetch(`${BASE_URL}/jobs/${jobId}`, {
+    method: "DELETE",
+  })
+
+  if (!res.ok) {
+    throw new Error("Could not delete the job. Please try again.")
+  }
+  return res.json()
+}

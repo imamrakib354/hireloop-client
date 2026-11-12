@@ -17,7 +17,7 @@ export function formatCompensation(
   frequency: string
 ) {
   const unit = salaryUnit(frequency)
-  const range = min && max ? `€${min} – €${max}` : "—"
+  const range = min && max ? `$${min} – $${max}` : "—"
   return range !== "—" && unit ? `${range} / ${unit}` : range
 }
 

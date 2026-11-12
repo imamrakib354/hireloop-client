@@ -20,7 +20,7 @@ test("salary ranges use the correct units", () => {
   ]) {
     assert.equal(
       display.formatCompensation("25", "40", frequency),
-      `€25 – €40 / ${unit}`
+      `$25 – $40 / ${unit}`
     )
   }
   assert.equal(display.formatCompensation("", "", "hourly"), "—")

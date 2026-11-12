@@ -1,6 +1,8 @@
 "use client"
 
-import { MoreVertical, Pencil, Trash2 } from "lucide-react"
+import Link from "next/link"
+import { Eye, Pencil } from "lucide-react"
+import { DeleteJobDialog } from "@/app/components/DeleteJobDialog"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/toast"
 
@@ -17,31 +19,23 @@ export function JobActions({ jobId, title }: { jobId: string; title: string }) {
     <div className="flex items-center gap-1.5" data-job-id={jobId}>
       <Button
         type="button"
-        size="sm"
+        size="icon-sm"
         onClick={() => comingSoon("Update")}
         aria-label={`Update ${title}`}
-        className="h-8 gap-1.5 rounded-md bg-[#282044] px-2.5 text-xs text-[#c4b5fd] hover:bg-[#362b59]"
+        title="Update job"
+        className="size-8 rounded-md bg-[#282044] text-[#c4b5fd] hover:bg-[#362b59]"
       >
-        <Pencil className="size-3.5" aria-hidden="true" /> Update
+        <Pencil className="size-4" aria-hidden="true" />
       </Button>
-      <Button
-        type="button"
-        size="icon-sm"
-        onClick={() => comingSoon("Delete")}
-        aria-label={`Delete ${title}`}
-        className="size-8 rounded-md bg-[#202023] text-zinc-400 hover:bg-red-400/10 hover:text-red-300"
+      <DeleteJobDialog job={{ _id: jobId, title }} />
+      <Link
+        href={`/jobs/${jobId}`}
+        aria-label={`View details for ${title}`}
+        title="View job details"
+        className="inline-flex size-8 items-center justify-center rounded-md bg-[#202023] text-sky-400 transition-colors outline-none hover:bg-sky-400/10 hover:text-sky-300 focus-visible:ring-2 focus-visible:ring-sky-400"
       >
-        <Trash2 className="size-4" aria-hidden="true" />
-      </Button>
-      <Button
-        type="button"
-        size="icon-sm"
-        onClick={() => comingSoon("More actions")}
-        aria-label={`More actions for ${title}`}
-        className="size-8 rounded-md bg-transparent text-zinc-500 hover:bg-white/5 hover:text-zinc-200"
-      >
-        <MoreVertical className="size-4" aria-hidden="true" />
-      </Button>
+        <Eye className="size-4" aria-hidden="true" />
+      </Link>
     </div>
   )
 }

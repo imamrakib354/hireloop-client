@@ -49,6 +49,7 @@ function nodes(element) {
 const jobs = [
   {
     _id: "job-123",
+    recruiterId: "recruiter-123",
     title: "Frontend Developer",
     companyName: "HireLoop",
     category: "Engineering & Tech",
@@ -71,7 +72,7 @@ test("fetched job values appear in both the desktop table and mobile cards", () 
     "HireLoop",
     "Engineering & Tech",
     "Remote (New York, USA)",
-    "€25 – €40 / hr",
+    "$25 – $40 / hr",
     "Open",
   ]) {
     assert.equal(items.filter((item) => item === text).length, 2, text)
@@ -87,14 +88,25 @@ test("fetched job values appear in both the desktop table and mobile cards", () 
   )
 })
 
-test("page fetches jobs and passes them to the list", async () => {
+test("page fetches all jobs but only passes the current recruiter's jobs to the list", async () => {
   const page = load("app/dashboard/recruiter/jobs/page.tsx", {
     "next/link": { default: "a" },
-    "@/lib/api/jobs": { getJobs: async () => jobs },
+    "@/lib/getUserSession": {
+      getCurrentUser: async () => ({ id: "recruiter-123" }),
+    },
+    "@/lib/api/jobs": {
+      getJobs: async () => [
+        ...jobs,
+        { ...jobs[0], _id: "other-job", recruiterId: "another-recruiter" },
+        { ...jobs[0], _id: "legacy-job", recruiterId: undefined },
+      ],
+    },
     "./job-list": { JobList: "JobList" },
   })
   const items = nodes(await page.default())
-  assert.equal(items.find((item) => item?.type === "JobList").props.jobs, jobs)
+  const visibleJobs = items.find((item) => item?.type === "JobList").props.jobs
+  assert.equal(visibleJobs.length, 1)
+  assert.equal(visibleJobs[0], jobs[0])
   assert.ok(
     items.some((item) => item?.props?.href === "/dashboard/recruiter/jobs/new")
   )
@@ -149,6 +161,9 @@ test("page displays empty and failed request states", async () => {
   for (const fail of [false, true]) {
     const page = load("app/dashboard/recruiter/jobs/page.tsx", {
       "next/link": { default: "a" },
+      "@/lib/getUserSession": {
+        getCurrentUser: async () => ({ id: "recruiter-123" }),
+      },
       "@/lib/api/jobs": {
         getJobs: async () => {
           if (fail) throw new Error("Offline")
@@ -168,21 +183,47 @@ test("page displays empty and failed request states", async () => {
   }
 })
 
-test("each job has update, delete, and more actions without mutations", () => {
+test("each job has icon-only update, delete dialog and view details actions", () => {
   const notices = []
   const actions = load("app/dashboard/recruiter/jobs/job-actions.tsx", {
+    "next/link": { default: "a" },
+    "@/app/components/DeleteJobDialog": { DeleteJobDialog: "DeleteJobDialog" },
     "@/components/ui/button": { Button: "Button" },
     "@/components/ui/toast": {
       toast: { add: (message) => notices.push(message) },
     },
   })
-  const buttons = nodes(
+  const items = nodes(
     actions.JobActions({ jobId: "job-123", title: "Frontend Developer" })
-  ).filter((item) => item?.type === "Button")
-  assert.equal(buttons.length, 3)
+  )
+  const dialog = items.find((item) => item?.type === "DeleteJobDialog")
+  assert.equal(dialog.props.job._id, "job-123")
+  assert.equal(dialog.props.job.title, "Frontend Developer")
+  const buttons = items.filter((item) => item?.type === "Button")
+  assert.equal(buttons.length, 1)
+  assert.equal(buttons[0].props.size, "icon-sm")
+  assert.ok(!items.includes("Update"))
+  const details = items.find((item) => item?.props?.href === "/jobs/job-123")
+  assert.ok(details.props["aria-label"].includes("Frontend Developer"))
   for (const button of buttons) {
     assert.ok(button.props["aria-label"].includes("Frontend Developer"))
     button.props.onClick()
   }
-  assert.equal(notices.length, 3)
+  assert.equal(notices.length, 1)
+})
+
+test("manage jobs never shows unowned jobs when there is no current user", async () => {
+  const page = load("app/dashboard/recruiter/jobs/page.tsx", {
+    "next/link": { default: "a" },
+    "@/lib/getUserSession": { getCurrentUser: async () => null },
+    "@/lib/api/jobs": {
+      getJobs: async () => {
+        throw new Error("Should not fetch")
+      },
+    },
+    "./job-list": { JobList: "JobList" },
+  })
+  const items = nodes(await page.default())
+  assert.ok(!items.some((item) => item?.type === "JobList"))
+  assert.ok(items.includes("No jobs posted yet"))
 })

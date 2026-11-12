@@ -1,14 +1,19 @@
 import Link from "next/link"
 import { ChevronRight, Plus } from "lucide-react"
 import { getJobs } from "@/lib/api/jobs"
+import { getCurrentUser } from "@/lib/getUserSession"
 import type { Job } from "@/lib/types/jobformdata"
 import { JobList } from "./job-list"
 
 export default async function ManageJobsPage() {
+  const user = await getCurrentUser()
   let jobs: Job[] = []
   let error = ""
   try {
-    jobs = await getJobs()
+    if (user) {
+      const allJobs = await getJobs()
+      jobs = allJobs.filter((job) => job.recruiterId === user.id)
+    }
   } catch {
     error = "We couldn't load your job listings. Please try again."
   }

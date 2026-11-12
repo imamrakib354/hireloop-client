@@ -1,6 +1,9 @@
-export type JobType = "Full-time" | "Part-time" | "Contract" | "Internship"
+export type JobType =
+  "Full-time" | "Part-time" | "Contract" | "Internship" | "Freelance"
 
 export type JobFormData = {
+  recruiterId: string
+  createdAt?: string
   title: string
   companyName: string
   category: string
