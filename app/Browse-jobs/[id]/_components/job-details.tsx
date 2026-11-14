@@ -16,7 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { JobCompanyOverview } from "@/app/components/JobCompanyOverview"
+import { JobCompanyOverview } from "./company-overview"
 import { deadlineDetails, formatCompensation } from "@/lib/job-display"
 import type { Company } from "@/lib/types/company"
 import type { Job } from "@/lib/types/jobformdata"

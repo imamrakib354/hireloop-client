@@ -82,7 +82,7 @@ function pageMocks(getJob, getCompanies) {
     },
     "@/lib/api/jobs": { getJob },
     "@/lib/api/companies": { getCompanies },
-    "@/app/components/JobDetails": { JobDetails: "JobDetails" },
+    "./_components/job-details": { JobDetails: "JobDetails" },
   }
 }
 
@@ -165,10 +165,10 @@ test("missing jobs trigger not-found and failed requests show retry UI", async (
   assert.ok(result.includes("Try again"))
 })
 
-const details = load("app/components/JobDetails.tsx", {
+const details = load("app/Browse-jobs/[id]/_components/job-details.tsx", {
   ...uiMocks,
   "@/lib/job-display": load("lib/job-display.ts"),
-  "@/app/components/JobCompanyOverview": {
+  "./company-overview": {
     JobCompanyOverview: "JobCompanyOverview",
   },
 })
@@ -219,7 +219,10 @@ test("pending and missing company profiles never show verified badges", () => {
   assert.ok(items.includes("Applications closed"))
 })
 
-const overview = load("app/components/JobCompanyOverview.tsx", uiMocks)
+const overview = load(
+  "app/Browse-jobs/[id]/_components/company-overview.tsx",
+  uiMocks
+)
 test("company sidebar displays company data and allows only HTTP(S) website links", () => {
   const items = nodes(
     overview.JobCompanyOverview({ company, companyName: job.companyName })

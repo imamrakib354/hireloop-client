@@ -18,13 +18,44 @@ function normalizeJob(job: StoredJob): Job {
   }
 }
 
-export const getJobs = async (): Promise<Job[]> => {
-  const res = await fetch(`${BASE_URL}/jobs`, { cache: "no-store" })
+export const getJobs = async (query = ""): Promise<Job[]> => {
+  const res = await fetch(`${BASE_URL}/jobs${query ? `?${query}` : ""}`, {
+    cache: "no-store",
+  })
   if (!res.ok) throw new Error("Could not load jobs. Please try again.")
   const data: StoredJob[] = await res.json()
   if (!Array.isArray(data)) throw new Error("The jobs response is invalid.")
 
   return data.map(normalizeJob)
+}
+
+export type JobFilterOptions = {
+  categories: string[]
+  jobTypeCounts: Record<string, number>
+}
+
+export async function getJobFilterOptions(): Promise<JobFilterOptions> {
+  const response = await fetch(`${BASE_URL}/jobs/filters`, {
+    cache: "no-store",
+  })
+  if (!response.ok) throw new Error("Could not load job filter options.")
+  const data = await response.json()
+  if (
+    !data ||
+    !Array.isArray(data.categories) ||
+    !data.categories.every(
+      (category: unknown) => typeof category === "string"
+    ) ||
+    !data.jobTypeCounts ||
+    typeof data.jobTypeCounts !== "object" ||
+    Array.isArray(data.jobTypeCounts) ||
+    !Object.values(data.jobTypeCounts).every(
+      (count) =>
+        typeof count === "number" && Number.isInteger(count) && count >= 0
+    )
+  )
+    throw new Error("The job filter options response is invalid.")
+  return data
 }
 
 export async function getJob(id: string): Promise<Job | null> {

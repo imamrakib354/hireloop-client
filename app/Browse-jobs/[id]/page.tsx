@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, RefreshCw } from "lucide-react"
-import { JobDetails } from "@/app/components/JobDetails"
+import { JobDetails } from "./_components/job-details"
 import { Button } from "@/components/ui/button"
 import { getJob } from "@/lib/api/jobs"
 import { getCompanies } from "@/lib/api/companies"

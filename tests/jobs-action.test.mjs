@@ -120,6 +120,71 @@ test("getJobs handles an empty list and rejects failed or invalid responses", as
   await assert.rejects(invalid.getJobs(), /response is invalid/)
 })
 
+test("getJobs forwards encoded filters without changing normalization", async () => {
+  const api = setup(
+    async (url, options) => {
+      assert.equal(
+        url,
+        "https://api.example.com/jobs?search=React+%26+Next&jobType=Full-time&jobType=Contract"
+      )
+      assert.equal(options.cache, "no-store")
+      return {
+        ok: true,
+        json: async () => [
+          { _id: "job", minSalary: 25, maxSalary: 40, frequency: "hourly" },
+        ],
+      }
+    },
+    "https://api.example.com",
+    "lib/api/jobs.ts"
+  )
+  const jobs = await api.getJobs(
+    "search=React+%26+Next&jobType=Full-time&jobType=Contract"
+  )
+  assert.equal(jobs[0].minSalary, "25")
+  assert.equal(jobs[0].salaryFrequency, "hourly")
+})
+
+test("filter metadata is fresh and validates its response", async () => {
+  const data = {
+    categories: ["Engineering & Tech"],
+    jobTypeCounts: { "Full-time": 2 },
+  }
+  const api = setup(
+    async (url, options) => {
+      assert.equal(url, "https://api.example.com/jobs/filters")
+      assert.equal(options.cache, "no-store")
+      return { ok: true, json: async () => data }
+    },
+    "https://api.example.com",
+    "lib/api/jobs.ts"
+  )
+  assert.equal(await api.getJobFilterOptions(), data)
+  for (const response of [
+    null,
+    {},
+    { categories: [5], jobTypeCounts: {} },
+    { categories: [], jobTypeCounts: [] },
+    { categories: [], jobTypeCounts: { "Full-time": -1 } },
+  ]) {
+    const invalid = setup(
+      async () => ({ ok: true, json: async () => response }),
+      undefined,
+      "lib/api/jobs.ts"
+    )
+    await assert.rejects(invalid.getJobFilterOptions(), /response is invalid/)
+  }
+  const failed = setup(
+    async () => ({ ok: false }),
+    undefined,
+    "lib/api/jobs.ts"
+  )
+  await assert.rejects(
+    failed.getJobFilterOptions(),
+    /Could not load job filter/
+  )
+})
+
 test("getJob fetches one fresh record and normalizes legacy compensation", async () => {
   const api = setup(
     async (url, options) => {
